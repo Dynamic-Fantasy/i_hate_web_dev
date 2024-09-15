@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Game</title>
+    <style>
+        :root {
+            --primary-blue: #00b894;
+            --secondary-blue: #0984e3;
+            --dark-blue: #233f5d;
+            --light-blue: #fff;
+            --accent-blue: #00b894;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1e3f5a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .quiz-container {
+            background-color: #233f5d;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .question {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #ffffff;
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px var(--accent-blue), 0 0 20px var(--accent-blue), 0 0 30px var(--accent-blue);
+            }
+            to {
+                text-shadow: 0 0 20px var(--accent-blue), 0 0 30px var(--accent-blue), 0 0 40px var(--accent-blue);
+            }
+        }
+        .options-box {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .option-button {
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            background: linear-gradient(145deg, var(--dark-blue), var(--secondary-blue));
+            color: var(--light-blue);
+            border: 2px solid var(--primary-blue);
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Space Mono', monospace;
+            text-align: center;
+        }
+        .option-button:hover {
+            background: var(--primary-blue);
+            color: #000;
+            box-shadow: 0 0 15px var(--primary-blue), 0 0 30px var(--primary-blue);
+            transform: translateY(-5px) scale(1.05);
+        }
+        .option-button:active {
+            transform: translateY(0) scale(1);
+            box-shadow: 0 0 5px var(--primary-blue), 0 0 10px var(--primary-blue);
+        }
+        .next-btn {
+            background-color: #0984e3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: none;
+        }
+        .next-btn:hover {
+            background-color: #74b9ff;
+        }
+        .score-container {
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container" id="quiz">
+        <div id="question-container">
+            <div id="question" class="question">Question will appear here</div>
+            <div class="options-box" id="options"></div>
+        </div>
+        <button class="next-btn" id="next-btn">Next Question</button>
+        <div id="score-container" class="score-container" style="display:none;"></div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "What is a common short-term effect of anabolic steroid abuse?",
+                options: ["Increased muscle mass", "Enhanced mood", "Hair loss", "Improved sleep"],
+                answer: "Hair loss"
+            },
+            {
+                question: "Which organ can be severely damaged by the misuse of stimulants?",
+                options: ["Heart", "Liver", "Kidneys", "Lungs"],
+                answer: "Heart"
+            },
+            {
+                question: "What mental health issue can result from long-term use of certain performance-enhancing drugs?",
+                options: ["Anxiety", "Euphoria", "Improved concentration", "Increased sociability"],
+                answer: "Anxiety"
+            },
+            {
+                question: "How can the use of diuretics affect the body?",
+                options: ["Increase fluid retention", "Decrease blood pressure", "Cause dehydration", "Enhance muscle growth"],
+                answer: "Cause dehydration"
+            },
+            {
+                question: "What is a potential consequence of using human growth hormone (HGH) without medical supervision?",
+                options: ["Increased bone density", "Reduced risk of diabetes", "Acromegaly", "Improved cardiovascular health"],
+                answer: "Acromegaly"
+            },
+            {
+                question: "What can be a result of using erythropoietin (EPO) inappropriately?",
+                options: ["Increased red blood cell count", "Improved muscle strength", "Decreased heart rate", "Enhanced bone health"],
+                answer: "Increased red blood cell count"
+            },
+            {
+                question: "Which of the following is a risk associated with using stimulants for performance enhancement?",
+                options: ["Drowsiness", "Low blood pressure", "Insomnia", "Weight gain"],
+                answer: "Insomnia"
+            },
+            {
+                question: "What is a possible long-term effect of abusing anabolic steroids on men?",
+                options: ["Reduced breast size", "Decreased facial hair growth", "Infertility", "Improved cholesterol levels"],
+                answer: "Infertility"
+            },
+            {
+                question: "Which of these is a consequence of misuse of opioids?",
+                options: ["Increased alertness", "Reduced pain sensitivity", "Risk of addiction", "Enhanced cognitive function"],
+                answer: "Risk of addiction"
+            },
+            {
+                question: "How can the use of anabolic steroids affect the liver?",
+                options: ["Enhance liver function", "Lead to liver tumors", "Reduce liver inflammation", "Increase liver enzyme levels"],
+                answer: "Lead to liver tumors"
+            },
+            {
+                question: "What is one of the dangers of using stimulants in high doses?",
+                options: ["Reduced heart rate", "Decreased blood pressure", "Severe cardiovascular issues", "Improved sleep"],
+                answer: "Severe cardiovascular issues"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const questionContainer = document.getElementById('question-container');
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const nextButton = document.getElementById('next-btn');
+        const scoreContainer = document.getElementById('score-container');
+
+        function startGame() {
+            currentQuestionIndex = 0;
+            score = 0;
+            showQuestion();
+        }
+
+        function showQuestion() {
+            resetState();
+            const currentQuestion = questions[currentQuestionIndex];
+            questionElement.innerText = currentQuestion.question;
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.classList.add('option-button');
+                button.addEventListener('click', () => selectAnswer(option, currentQuestion.answer));
+                optionsElement.appendChild(button);
+            });
+        }
+
+        function resetState() {
+            nextButton.style.display = 'none';
+            while (optionsElement.firstChild) {
+                optionsElement.removeChild(optionsElement.firstChild);
+            }
+        }
+
+        function selectAnswer(selectedOption, correctAnswer) {
+            if (selectedOption === correctAnswer) {
+                score++;
+            }
+            Array.from(optionsElement.children).forEach(button => {
+                button.disabled = true;
+                if (button.innerText === correctAnswer) {
+                    button.style.backgroundColor = '#00b894'; // Green for correct answer
+                    button.style.color = 'white';
+                } else {
+                    button.style.backgroundColor = '#d63031'; // Red for incorrect answers
+                    button.style.color = 'white';
+                }
+            });
+            nextButton.style.display = 'block';
+        }
+
+        nextButton.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                showScore();
+            }
+        });
+
+        function showScore() {
+            questionContainer.style.display = 'none';
+            nextButton.style.display = 'none';
+            scoreContainer.style.display = 'block';
+            scoreContainer.innerHTML = `<h2>Your Score: ${score}/${questions.length}</h2>`;
+        }
+
+        startGame();
+    </script>
+
+</body>
+</html>
